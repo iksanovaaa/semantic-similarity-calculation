@@ -23,6 +23,7 @@ namespace SemanticSimilarityCalculation.Controllers
         /// <summary>
         /// Проверяет работоспособность контролера
         /// </summary>
+        [HttpGet]
         public string Ping()
         {
             return "Alive";
