@@ -6,6 +6,8 @@ namespace SemanticSimilarityCalculation.Models
     {
         public List<AnnotationItem> Items { get; set; }
 
+        public List<string> NormalItems { get; set; }
+
         public Annotation()
         {
             this.Items = new List<AnnotationItem>();

@@ -1,53 +1,51 @@
-﻿using System.Collections.Generic;
+﻿using SemanticSimilarityCalculation.Services;
+using SemanticSimilarityCalculation.Services.Interfaces;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SemanticSimilarityCalculation.Models
 {
     public class Document
     {
+        private static readonly ITextProcessingService _textProcessingService 
+                                                                = new TextProcessingService();
+
         public string Id { get; set; }
-        public List<Annotation> Annotation { get; set; }
+        public List<Annotation> Annotations { get; set; }
         public string Name { get; set; }
         public string Text { get; set; }
-        public List<double> Vector
-        {
-            get
-            {
-                var vector = new List<double>();
-                foreach (var annotationItem in this.Annotation)
-                {
-                    var itemWords = annotationItem.Items
-                                        .Where(item => item.TextWord != null)
-                                        .Count();
-                    if (itemWords != 0)
-                    {
-                        vector.Add(itemWords);
-                    }
-                    else
-                    {
-                        vector.Add(0);
-                    }
-                }
+        public List<double> Vector { get; set; }
+        public int WordCount { get; set; }
 
-                return vector;
-            }
-        }
-
-        public Document(string id, List<Annotation> annotation, string name, string text)
+        public Document(string id, List<Annotation> annotations, string name, string text)
         {
             this.Id = id;
-            this.Annotation = annotation;
+            this.Annotations = annotations;
             this.Name = name;
             this.Text = text;
+            this.WordCount = _textProcessingService.CountWords(this.Text);
         }
 
-        public override string ToString()
+        public void CreateVector(IEnumerable<IEnumerable<string>> words)
         {
-            var id = $"id: {this.Id}\n";
-            var name = $"name: {this.Name}\n";
-            var text = $"text: {this.Text}\n";
+            var wordsArr = words.ToArray();
+            var vector = new List<double>();
 
-            return $"{id}{name}{text}";
+            for (int i = 0; i < wordsArr.Count(); i++)
+            {
+                var annoWords = wordsArr[i];
+                foreach (var word in annoWords)
+                {
+                    var wordsToCount = this.Annotations.ToArray()[i].Items
+                               .Where(i => i.NormaTextlWord == word)
+                               .Select(i => i.NormaTextlWord)
+                               .ToList();
+                    var number = (wordsToCount.Count() / (double)this.WordCount * 1000);
+                    vector.Add(number);
+                }
+            }
+
+            this.Vector = vector;
         }
     }
 }

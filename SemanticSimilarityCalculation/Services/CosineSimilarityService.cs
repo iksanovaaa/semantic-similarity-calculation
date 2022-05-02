@@ -7,37 +7,38 @@ using System.Linq;
 namespace SemanticSimilarityCalculation.Services
 {
     public class CosineSimilarityService : ICosineSimilarityService
-    {        
-        public List<DocumentsSimilarity> GetCorpusSimilarity(List<Document> corpus)
+    {
+        private const double MIN_SIMILARITY_VALUE = 0.35;
+
+        public List<DocumentsSimilarity> GetCorpusSimilarity(Corpus corpus)
         {
-            var similarityList = new List<DocumentsSimilarity>();
+            var documentsSimilarities = new List<DocumentsSimilarity>();
             var vectors = GetVectorsFromCorpus(corpus);
 
-            for (int i = 0; i < corpus.Count - 1; i++)
+            for (int i = 0; i < corpus.Documents.Count - 1; i++)
             {
-                for (int j = i + 1; j < corpus.Count; j++)
+                for (int j = i + 1; j < corpus.Documents.Count; j++)
                 {
                     var cosineSimilarity = GetCosineSimilarity(vectors[i], vectors[j]);
-                    var firstDocumentId = corpus[i].Id;
-                    var secondDocumentId = corpus[j].Id;
-                    var documentsSimilarity = new DocumentsSimilarity(firstDocumentId
-                                                              , secondDocumentId, cosineSimilarity);
-                    similarityList.Add(documentsSimilarity);
+                    var documentsSimilarity = new DocumentsSimilarity(corpus.Documents[i].Id
+                                                        , corpus.Documents[j].Id, cosineSimilarity);
+                    documentsSimilarities.Add(documentsSimilarity);
                 }
             }
 
-            return similarityList;
+            return documentsSimilarities;
         }
 
-        public List<DocumentsSimilarity> GetMostRelevantDocumentsIds(List<Document> corpus
+        public List<DocumentsSimilarity> GetMostRelevantDocumentsIds(Corpus corpus
                                                                        , string documentId)
         {
             var similarityList = GetCorpusSimilarity(corpus);
-            var relevantDocuments = similarityList.Where(ds => (ds.FirstDocumentId == documentId 
-                                                               || ds.SecondDocumentId == documentId)
-                                                               && ds.Similarity > 0.5)
-                                                     .OrderByDescending(ds => ds.Similarity)
-                                                     .ToList();
+            var relevantDocuments = similarityList.Where(ds => (ds.FirstDocumentId == documentId
+                                                            || ds.SecondDocumentId == documentId)
+                                                            && ds.Similarity > MIN_SIMILARITY_VALUE)
+                                                   .OrderByDescending(ds => ds.Similarity)
+                                                   .ToList();
+
             for (int i = 0; i < relevantDocuments.Count; i++)
             {
                 if (relevantDocuments[i].SecondDocumentId == documentId)
@@ -51,14 +52,15 @@ namespace SemanticSimilarityCalculation.Services
             return relevantDocuments;
         }
 
-        private List<List<double>> GetVectorsFromCorpus(List<Document> corpus)
+        private List<List<double>> GetVectorsFromCorpus(Corpus corpus)
         {
             var vectors = new List<List<double>>();
 
-            foreach (var document in corpus)
+            foreach (var document in corpus.Documents)
             {
                 vectors.Add(document.Vector);
             }
+
             vectors = NormalizeVectors(vectors);
             return vectors;
         }
