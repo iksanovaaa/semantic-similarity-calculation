@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace SemanticSimilarityCalculation.Models
+﻿namespace SemanticSimilarityCalculation.Models
 {
     public class AnnotationItem
     {
@@ -9,13 +7,17 @@ namespace SemanticSimilarityCalculation.Models
         public string TextWord { get; set; }
         public string OntologyTerm { get; set; }
         public int? TokenIndex { get; set; }
+        public string NormaTextlWord { get; }
 
-        public AnnotationItem(int startIndex, int endIndex, string textWord, string ontologyTerm
-                                                                                , int tokenIndex)
+        public AnnotationItem() { }
+
+        public AnnotationItem(int startIndex, int endIndex, string textWord, string normalTextWord
+                                                            , string ontologyTerm, int tokenIndex)
         {
             this.StartIndex = startIndex;
             this.EndIndex = endIndex;
             this.TextWord = textWord;
+            this.NormaTextlWord = normalTextWord;
             this.OntologyTerm = ontologyTerm;
             this.TokenIndex = tokenIndex;
         }
@@ -24,28 +26,10 @@ namespace SemanticSimilarityCalculation.Models
         {
             this.StartIndex = null;
             this.EndIndex = null;
-            this.TextWord = string.Empty;
+            this.TextWord = null;
+            this.NormaTextlWord = null;
             this.OntologyTerm = ontologyTerm;
             this.TokenIndex = null;
-        }
-
-        public AnnotationItem() { }
-
-        public AnnotationItem GetAnnotationItemFromJson(string jsonInput)
-        {
-            var annotationItem = JsonConvert.DeserializeObject<AnnotationItem>(jsonInput);
-            return annotationItem;
-        }
-
-        public override string ToString()
-        {
-            var startIndexTxt = $"start_index: {this.StartIndex}\n";
-            var endIndexTxt = $"end_index: {this.EndIndex}\n";
-            var textWordTxt = $"text_word: {this.TextWord}\n";
-            var ontoogyTermTxt = $"token_word: {this.OntologyTerm}\n";
-            var tokenIndexTxt = $"token_index: {this.TokenIndex}";
-
-            return $"{startIndexTxt}{endIndexTxt}{textWordTxt}{ontoogyTermTxt}{tokenIndexTxt}";
         }
     }
 }

@@ -6,8 +6,6 @@ using Microsoft.Extensions.Hosting;
 using SemanticSimilarityCalculation.Services;
 using SemanticSimilarityCalculation.Services.Interfaces;
 using System;
-using System.Reflection;
-using System.IO;
 using Microsoft.OpenApi.Models;
 
 namespace SemanticSimilarityCalculation
@@ -21,14 +19,13 @@ namespace SemanticSimilarityCalculation
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
             services.AddScoped<IAnnotationService, AnnotationService>();
             services.AddScoped<ICosineSimilarityService, CosineSimilarityService>();
-            // Register the Swagger generator, defining 1 or more Swagger documents
-            // Register the Swagger generator, defining 1 or more Swagger documents
+            services.AddScoped<ITextProcessingService, TextProcessingService>();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
@@ -46,7 +43,6 @@ namespace SemanticSimilarityCalculation
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -56,10 +52,8 @@ namespace SemanticSimilarityCalculation
 
             app.UseHttpsRedirection();
 
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
 
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.)
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Semantic Similarity API");

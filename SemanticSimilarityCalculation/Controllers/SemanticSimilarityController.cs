@@ -2,7 +2,6 @@
 using SemanticSimilarityCalculation.Models;
 using SemanticSimilarityCalculation.Services.Interfaces;
 using System.Collections.Generic;
-using System.IO;
 
 namespace SemanticSimilarityCalculation.Controllers
 {
@@ -35,28 +34,22 @@ namespace SemanticSimilarityCalculation.Controllers
         [HttpPost("Calculate")]
         public List<DocumentsSimilarity> CalculateSemanticSimilarity([FromQuery] string annotation)
         {
-            var json = string.Empty;
-            using (StreamReader r = new StreamReader(annotation))
-            {
-                json = r.ReadToEnd();
-            }
-            var documents = _annotationService.GetDocumentAnnotationsFromJson(json);
-            var similarityDict = _cosineSimilarityService.GetCorpusSimilarity(documents);
+            var corpus = _annotationService.GetCorpusFromAnnotation(annotation);
+            var similarityDict = _cosineSimilarityService.GetCorpusSimilarity(corpus);
 
             return similarityDict;
         }
 
+        /// <summary>
+        /// Находит наиболее близкие семантически документы для заданного документа корпуса
+        /// и выводит результат
+        /// </summary>
         [HttpPost("GetRelevant")]
-        public List<DocumentsSimilarity> CalculateSemanticSimilarity([FromQuery] string annotation
+        public List<DocumentsSimilarity> GetRelevantDocuments([FromQuery] string annotation
                                                                   , string documentId)
         {
-            var json = string.Empty;
-            using (StreamReader r = new StreamReader(annotation))
-            {
-                json = r.ReadToEnd();
-            }
-            var documents = _annotationService.GetDocumentAnnotationsFromJson(json);
-            var relevantDocuments = _cosineSimilarityService.GetMostRelevantDocumentsIds(documents
+            var corpus = _annotationService.GetCorpusFromAnnotation(annotation);
+            var relevantDocuments = _cosineSimilarityService.GetMostRelevantDocumentsIds(corpus
                                                                                       , documentId);
 
             return relevantDocuments;
