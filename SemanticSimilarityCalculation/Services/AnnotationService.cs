@@ -1,8 +1,14 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.Extensions.Configuration;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using Newtonsoft.Json.Linq;
 using SemanticSimilarityCalculation.Models;
 using SemanticSimilarityCalculation.Services.Interfaces;
+using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SemanticSimilarityCalculation.Services
 {
@@ -15,24 +21,71 @@ namespace SemanticSimilarityCalculation.Services
             _textProcessingService = textProcessingService;
         }
 
-        public Corpus GetCorpusFromAnnotation(string annotation)
+        public Corpus GetCorpus()
         {
-            var json = GetJson(annotation);
+            var json = GetJson();
             var corpus = GetCorpusFromJson(json);
 
             return corpus;
         }
 
-        private string GetJson(string annotation)
+        #region Get JSON from database
+
+        private string GetJson()
         {
-            var json = string.Empty;
-            using (StreamReader r = new StreamReader(annotation))
+            var connectionString = GetConnectionString();
+            var annotations = GetAnnotationsFromDataBase(connectionString).Result;
+            var json = $"[{annotations}]";
+
+            return json.ToString();
+        }
+
+        private string GetConnectionString()
+        {
+            string projectPath = AppDomain.CurrentDomain.BaseDirectory
+                                       .Split(new String[] { @"bin\" }, StringSplitOptions.None)[0];
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                .SetBasePath(projectPath)
+                .AddJsonFile("appsettings.json")
+                .Build();
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+            return connectionString;
+        }
+
+        private async Task<string> GetAnnotationsFromDataBase(string connectionString)
+        {
+            var annotations = new StringBuilder();
+
+            var Client = new MongoClient(connectionString);
+            var DB = Client.GetDatabase("user_shopping_list");
+            var collection = DB.GetCollection<BsonDocument>("annotations");
+            var filter = new BsonDocument();
+
+            using (var cursor = await collection.FindAsync(filter))
             {
-                json = r.ReadToEnd();
+                while (await cursor.MoveNextAsync())
+                {
+                    var count = 1;
+                    foreach (var document in cursor.Current)
+                    {
+                        var clearDocument = document.ToString().Replace("ObjectId(", string.Empty)
+                                                               .Replace("), \"id\"", ", \"id\"")
+                                                               .Replace("}}", "}");
+                        annotations.Append(clearDocument);
+                        if (count < cursor.Current.Count())
+                        {
+                            annotations.Append(",");
+                            count++;
+                        }
+                    }
+                }
             }
 
-            return json;
+            return annotations.ToString();
         }
+
+        #endregion Get JSON from database
 
         private Corpus GetCorpusFromJson(string inputJson)
         {
@@ -42,7 +95,7 @@ namespace SemanticSimilarityCalculation.Services
             {
                 var records = items[i]["annotation"].Children();
                 var annotationItems = new List<Annotation>();
-                var id = (string)items[i]["_id"]["$oid"];
+                var id = (string)items[i]["_id"];
                 var name = (string)items[i]["name"];
                 var text = (string)items[i]["text"];
 

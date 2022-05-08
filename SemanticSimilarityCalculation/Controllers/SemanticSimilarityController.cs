@@ -31,24 +31,23 @@ namespace SemanticSimilarityCalculation.Controllers
         /// <summary>
         /// Рассчитывает семантическую близость между документами корпуса и выводит результат
         /// </summary>
-        [HttpPost("Calculate")]
-        public List<DocumentsSimilarity> CalculateSemanticSimilarity([FromQuery] string annotation)
+        [HttpPost("CalculateSimilarity")]
+        public List<DocumentsSimilarity> CalculateSemanticSimilarity()
         {
-            var corpus = _annotationService.GetCorpusFromAnnotation(annotation);
+            var corpus = _annotationService.GetCorpus();
             var similarityDict = _cosineSimilarityService.GetCorpusSimilarity(corpus);
 
             return similarityDict;
         }
 
         /// <summary>
-        /// Находит наиболее близкие семантически документы для заданного документа корпуса
+        /// Находит для заданного документа корпуса документы, которые наиболее близки семантически,
         /// и выводит результат
         /// </summary>
         [HttpPost("GetRelevant")]
-        public List<DocumentsSimilarity> GetRelevantDocuments([FromQuery] string annotation
-                                                                  , string documentId)
+        public List<DocumentsSimilarity> GetRelevantDocuments(string documentId)
         {
-            var corpus = _annotationService.GetCorpusFromAnnotation(annotation);
+            var corpus = _annotationService.GetCorpus();
             var relevantDocuments = _cosineSimilarityService.GetMostRelevantDocumentsIds(corpus
                                                                                       , documentId);
 
