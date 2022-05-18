@@ -6,11 +6,28 @@ using System.Linq;
 
 namespace SemanticSimilarityCalculation.Services
 {
-    public class CosineSimilarityService : ICosineSimilarityService
+    public class CosineSimilarityService : ISimilarityService
     {
         private const double MIN_SIMILARITY_VALUE = 0.35;
 
-        public List<DocumentsSimilarity> GetCorpusSimilarity(Corpus corpus)
+        public IAnnotationService _annotationService;
+
+        public CosineSimilarityService(IAnnotationService annotationService)
+        {
+            _annotationService = annotationService;
+        }
+
+        public CorpusSimilarity GetCorpusSimilarity(Corpus corpus)
+        {
+            var corpusSimilarityValues = GetDocumentsSimilarities(corpus);
+            var corpusNames = _annotationService.GetDocumentsNames(corpus);
+
+            var corpusSimilarity = new CorpusSimilarity(corpusSimilarityValues, corpusNames);
+
+            return corpusSimilarity;
+        }
+
+        public List<DocumentsSimilarity> GetDocumentsSimilarities(Corpus corpus)
         {
             var documentsSimilarities = new List<DocumentsSimilarity>();
             var vectors = GetVectorsFromCorpus(corpus);
@@ -32,7 +49,7 @@ namespace SemanticSimilarityCalculation.Services
         public List<DocumentsSimilarity> GetMostRelevantDocumentsIds(Corpus corpus
                                                                        , string documentId)
         {
-            var similarityList = GetCorpusSimilarity(corpus);
+            var similarityList = GetDocumentsSimilarities(corpus);
             var relevantDocuments = similarityList.Where(ds => (ds.FirstDocumentId == documentId
                                                             || ds.SecondDocumentId == documentId)
                                                             && ds.Similarity > MIN_SIMILARITY_VALUE)

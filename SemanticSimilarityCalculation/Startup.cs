@@ -23,12 +23,12 @@ namespace SemanticSimilarityCalculation
         {
             services.AddControllers();
             services.AddScoped<IAnnotationService, AnnotationService>();
-            services.AddScoped<ICosineSimilarityService, CosineSimilarityService>();
+            services.AddScoped<ISimilarityService, CosineSimilarityService>();
             services.AddScoped<ITextProcessingService, TextProcessingService>();
 
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo
+                options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
                     Title = "Semantic Similarity API",

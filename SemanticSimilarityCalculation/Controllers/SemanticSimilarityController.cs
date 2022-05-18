@@ -10,10 +10,10 @@ namespace SemanticSimilarityCalculation.Controllers
     public class SemanticSimilarityController : Controller
     {
         private readonly IAnnotationService _annotationService;
-        private readonly ICosineSimilarityService _cosineSimilarityService;
+        private readonly ISimilarityService _cosineSimilarityService;
 
         public SemanticSimilarityController(IAnnotationService annotationService
-                                          , ICosineSimilarityService cosineSimilarityService)
+                                          , ISimilarityService cosineSimilarityService)
         {
             _annotationService = annotationService;
             _cosineSimilarityService = cosineSimilarityService;
@@ -29,10 +29,25 @@ namespace SemanticSimilarityCalculation.Controllers
         }
 
         /// <summary>
-        /// Рассчитывает семантическую близость между документами корпуса и выводит результат
+        /// Рассчитывает семантическую близость между документами корпуса и выводит результат в
+        /// виде списка элементов, содержащих id документов и числовое значение рассчитанной метрики
         /// </summary>
         [HttpPost("CalculateSimilarity")]
-        public List<DocumentsSimilarity> CalculateSemanticSimilarity()
+        public List<DocumentsSimilarity> CalculateDocumentsSimilaries()
+        {
+            var corpus = _annotationService.GetCorpus();
+            var documentsSimilarities = _cosineSimilarityService.GetDocumentsSimilarities(corpus);
+
+            return documentsSimilarities;
+        }
+
+        /// <summary>
+        /// Рассчитывает семантическую близость между документами корпуса и выводит результат в
+        /// виде списка элементов, содержащих id документов и числовое значение рассчитанной метрики
+        /// и списка имен документов
+        /// </summary>
+        [HttpPost("CalculateSimilarityWithNames")]
+        public CorpusSimilarity CalculateCorpusSimilarity()
         {
             var corpus = _annotationService.GetCorpus();
             var similarityDict = _cosineSimilarityService.GetCorpusSimilarity(corpus);

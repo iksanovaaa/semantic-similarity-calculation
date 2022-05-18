@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 namespace SemanticSimilarityCalculation.Services.Interfaces
 {
-    public interface ICosineSimilarityService
+    public interface ISimilarityService
     {
-        public List<DocumentsSimilarity> GetCorpusSimilarity(Corpus corpus);
-
+        public CorpusSimilarity GetCorpusSimilarity(Corpus corpus);
+        public List<DocumentsSimilarity> GetDocumentsSimilarities(Corpus corpus);
         public List<DocumentsSimilarity> GetMostRelevantDocumentsIds(Corpus corpus
                                                                    , string documentId);
     }

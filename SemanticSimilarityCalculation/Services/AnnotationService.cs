@@ -29,6 +29,19 @@ namespace SemanticSimilarityCalculation.Services
             return corpus;
         }
 
+        public List<DocumentInfo> GetDocumentsNames(Corpus corpus)
+        {
+            var documentsNames = new List<DocumentInfo>();
+
+            foreach (var document in corpus.Documents)
+            {
+                var documentInfo = new DocumentInfo(document.Id, document.Name);
+                documentsNames.Add(documentInfo);
+            }
+
+            return documentsNames;
+        }
+
         #region Get JSON from database
 
         private string GetJson()
@@ -57,9 +70,9 @@ namespace SemanticSimilarityCalculation.Services
         {
             var annotations = new StringBuilder();
 
-            var Client = new MongoClient(connectionString);
-            var DB = Client.GetDatabase("user_shopping_list");
-            var collection = DB.GetCollection<BsonDocument>("annotations");
+            var client = new MongoClient(connectionString);
+            var db = client.GetDatabase("user_shopping_list");
+            var collection = db.GetCollection<BsonDocument>("annotations");
             var filter = new BsonDocument();
 
             using (var cursor = await collection.FindAsync(filter))
