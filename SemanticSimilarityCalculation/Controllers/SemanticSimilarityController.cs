@@ -32,7 +32,7 @@ namespace SemanticSimilarityCalculation.Controllers
         /// Рассчитывает семантическую близость между документами корпуса и выводит результат в
         /// виде списка элементов, содержащих id документов и числовое значение рассчитанной метрики
         /// </summary>
-        [HttpGet("CalculateSimilarity")]
+        [HttpGet("GetSimilarity")]
         public List<DocumentsSimilarity> CalculateDocumentsSimilaries()
         {
             var corpus = _annotationService.GetCorpus();
@@ -46,7 +46,7 @@ namespace SemanticSimilarityCalculation.Controllers
         /// виде списка элементов, содержащих id документов и числовое значение рассчитанной метрики
         /// и списка имен документов
         /// </summary>
-        [HttpGet("CalculateSimilarityWithNames")]
+        [HttpGet("GetSimilarityWithNames")]
         public CorpusSimilarity CalculateCorpusSimilarity()
         {
             var corpus = _annotationService.GetCorpus();
