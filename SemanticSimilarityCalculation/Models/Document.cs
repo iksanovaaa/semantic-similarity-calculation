@@ -17,6 +17,8 @@ namespace SemanticSimilarityCalculation.Models
         public List<double> Vector { get; set; }
         public int WordCount { get; set; }
 
+        public Document() { }
+
         public Document(string id, List<Annotation> annotations, string name, string text)
         {
             this.Id = id;

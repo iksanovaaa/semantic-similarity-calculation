@@ -2,6 +2,7 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Newtonsoft.Json.Linq;
+using SemanticSimilarityCalculation.Exceptions;
 using SemanticSimilarityCalculation.Models;
 using SemanticSimilarityCalculation.Services.Interfaces;
 using System;
@@ -31,13 +32,8 @@ namespace SemanticSimilarityCalculation.Services
 
         public List<DocumentInfo> GetDocumentsNames(Corpus corpus)
         {
-            var documentsNames = new List<DocumentInfo>();
-
-            foreach (var document in corpus.Documents)
-            {
-                var documentInfo = new DocumentInfo(document.Id, document.Name);
-                documentsNames.Add(documentInfo);
-            }
+            var documentsNames = corpus.Documents.Select(d => new DocumentInfo(d.Id, d.Name))
+                                                 .ToList();
 
             return documentsNames;
         }
@@ -127,51 +123,72 @@ namespace SemanticSimilarityCalculation.Services
         private Annotation GetAnnotation(JToken record)
         {
             var annotationToken = record.Children().Children();
-            AnnotationItem annotationItem = new AnnotationItem();
             var annotationItems = new Annotation();
             var path = record.Path.Split('.');
             var term = path[path.Length - 1];
 
-            if (!record.First.HasValues)
-            {
-                annotationItem.OntologyTerm = term;
-                annotationItems.Items.Add(annotationItem);
-            }
-            else
+            if (record.First.HasValues)
             {
                 foreach (JToken token in annotationToken)
                 {
-                    annotationItem = GetAnnotationItemFromToken(token, term);
+                    var annotationItem = GetAnnotationItemFromToken(token, term);
                     annotationItems.Items.Add(annotationItem);
                 }
             }
+            else
+            {
+                var annotationItem = new AnnotationItem(term);
+                annotationItems.Items.Add(annotationItem);
+            }
+
             return annotationItems;
         }
 
         private AnnotationItem GetAnnotationItemFromToken(JToken token, string term)
         {
-            var annotationItem = new AnnotationItem();
+            var annotationItem = new AnnotationItem(term);
+
             if (token.First != null)
             {
                 var termElement = token.First;
                 var newTerm = (JProperty)termElement;
-                var textWord = (string)((JValue)newTerm.Value).Value;
-                var normalTextWord = _textProcessingService.GetNormalisedWord(textWord);
+                var textWord = (string)((JValue)newTerm.Value).Value.ToString().ToLower();
+                var normalTextWord = GetNormalWordForAnnotationItem(textWord);
                 newTerm = (JProperty)newTerm.Next;
-                var startIndex = (long)((JValue)newTerm.Value).Value;
-                newTerm = (JProperty)newTerm.Next;
-                var endIndex = (long)((JValue)newTerm.Value).Value;
-                newTerm = (JProperty)newTerm.Next;
-                var tokenIndex = (long)((JValue)newTerm.Value).Value;
+                var startIndex = GetNumberFromTerm(ref newTerm);
+                var endIndex = GetNumberFromTerm(ref newTerm);
+                var tokenIndex = GetNumberFromTerm(ref newTerm);
 
-                annotationItem = new AnnotationItem((int)startIndex, (int)endIndex
-                                                 , textWord, normalTextWord, term, (int)tokenIndex);
+                annotationItem = new AnnotationItem(startIndex, endIndex, textWord, normalTextWord
+                                                  , term, tokenIndex);
             }
-            else
-            {
-                annotationItem = new AnnotationItem(term);
-            }
+
             return annotationItem;
+        }
+
+        private string GetNormalWordForAnnotationItem(string textWord)
+        {
+            var normalTextWord = string.Empty;
+
+            try
+            {
+                normalTextWord = _textProcessingService.GetNormalisedWord(textWord);
+            }
+            catch
+            {
+                var exceptionMessage = "Сервис для обработки текста не найден.";
+                throw new TextProcessingServiceNotFoundException(exceptionMessage);
+            }
+
+            return normalTextWord;
+        }
+
+        private int GetNumberFromTerm(ref JProperty term)
+        {
+            var number = (long)((JValue)term.Value).Value;
+            term = (JProperty)term.Next;
+
+            return (int)number;
         }
     }
 }

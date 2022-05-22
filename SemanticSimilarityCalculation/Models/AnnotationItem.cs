@@ -9,8 +9,6 @@
         public int? TokenIndex { get; set; }
         public string NormaTextlWord { get; }
 
-        public AnnotationItem() { }
-
         public AnnotationItem(int startIndex, int endIndex, string textWord, string normalTextWord
                                                             , string ontologyTerm, int tokenIndex)
         {
