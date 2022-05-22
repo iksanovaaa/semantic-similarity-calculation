@@ -39,13 +39,21 @@ namespace SemanticSimilarityCalculation.Services
         {
             var result = Processor.Process(new SourceOfAnalysis(text));
             var token = result.FirstToken;
-            var count = 1;
-            while (token.Next != null)
+
+            if (token == null)
             {
-                token = token.Next;
-                count++;
+                return 0;
             }
-            return count;
+            else
+            {
+                var count = 1;
+                while (token.Next != null)
+                {
+                    token = token.Next;
+                    count++;
+                }
+                return count;
+            }
         }
 
         private bool IsNoun(Token token)
