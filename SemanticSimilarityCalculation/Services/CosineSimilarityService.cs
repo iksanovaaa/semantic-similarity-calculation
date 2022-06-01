@@ -1,4 +1,5 @@
-﻿using SemanticSimilarityCalculation.Models;
+﻿using SemanticSimilarityCalculation.Exceptions;
+using SemanticSimilarityCalculation.Models;
 using SemanticSimilarityCalculation.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,8 @@ namespace SemanticSimilarityCalculation.Services
         public CorpusSimilarity GetCorpusSimilarity(Corpus corpus)
         {
             var corpusSimilarityValues = GetDocumentsSimilarities(corpus);
-            var corpusNames = _annotationService.GetDocumentsNames(corpus);
+
+            var corpusNames = GetCorpusNames(corpus);
 
             var corpusSimilarity = new CorpusSimilarity(corpusSimilarityValues, corpusNames);
 
@@ -32,9 +34,9 @@ namespace SemanticSimilarityCalculation.Services
             var documentsSimilarities = new List<DocumentsSimilarity>();
             var vectors = GetVectorsFromCorpus(corpus);
 
-            for (int i = 0; i < corpus.Documents.Count - 1; i++)
+            for (var i = 0; i < corpus.Documents.Count - 1; i++)
             {
-                for (int j = i + 1; j < corpus.Documents.Count; j++)
+                for (var j = i + 1; j < corpus.Documents.Count; j++)
                 {
                     var cosineSimilarity = GetCosineSimilarity(vectors[i], vectors[j]);
                     var documentsSimilarity = new DocumentsSimilarity(corpus.Documents[i].Id
@@ -56,7 +58,7 @@ namespace SemanticSimilarityCalculation.Services
                                                    .OrderByDescending(ds => ds.Similarity)
                                                    .ToList();
 
-            for (int i = 0; i < relevantDocuments.Count; i++)
+            for (var i = 0; i < relevantDocuments.Count; i++)
             {
                 if (relevantDocuments[i].SecondDocumentId == documentId)
                 {
@@ -67,6 +69,20 @@ namespace SemanticSimilarityCalculation.Services
             }
 
             return relevantDocuments;
+        }
+
+        private List<DocumentInfo> GetCorpusNames(Corpus corpus)
+        {
+            try
+            {
+                var corpusNames = _annotationService.GetDocumentsNames(corpus);
+                return corpusNames;
+            }
+            catch
+            {
+                var exceptionMessage = "Сервис для работы с аннотациями не найден.";
+                throw new AnnotationServiceNotFoundException(exceptionMessage);
+            }
         }
 
         private List<List<double>> GetVectorsFromCorpus(Corpus corpus)
@@ -84,17 +100,20 @@ namespace SemanticSimilarityCalculation.Services
 
         private List<List<double>> NormalizeVectors(List<List<double>> vectors)
         {
-            var maxValue = vectors.Max(vector => vector.Max());
-            for (int i = 0; i < vectors.Count; i++)
+            if (vectors.Any())
             {
-                vectors[i] = NormalizeVector(vectors[i], maxValue);
+                var maxValue = vectors.Max(vector => vector.Max());
+                for (var i = 0; i < vectors.Count; i++)
+                {
+                    vectors[i] = NormalizeVector(vectors[i], maxValue);
+                }
             }
             return vectors;
         }
 
         private List<double> NormalizeVector(List<double> vector, double maxValue)
         {
-            for (int i = 0; i < vector.Count; i++)
+            for (var i = 0; i < vector.Count; i++)
             {
                 vector[i] /= maxValue;
             }
@@ -104,7 +123,7 @@ namespace SemanticSimilarityCalculation.Services
         private double GetVectorsScalar(List<double> vector1, List<double> vector2)
         {
             double scalar = 0;
-            for (int i = 0; i < vector1.Count; i++)
+            for (var i = 0; i < vector1.Count; i++)
             {
                 scalar += (vector1[i] * vector2[i]);
             }

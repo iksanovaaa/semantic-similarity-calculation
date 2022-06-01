@@ -25,7 +25,11 @@ namespace SemanticSimilarityCalculation.Models
 
         private List<List<string>> GetAllNormWordsForCorpus()
         {
-            var annos = this.Documents
+            var normalWordsForAnnotationItems = new List<List<string>>();
+
+            if (this.Documents.Where(d => d.Annotations != null).Any())
+            {
+                var annos = this.Documents
                                 .Select(d => d.Annotations
                                                 .Select(a => a.Items
                                                                 .Select(i => i.NormaTextlWord)
@@ -34,17 +38,18 @@ namespace SemanticSimilarityCalculation.Models
                                                 .ToList())
                                 .ToList();
 
-            var normalWordsForAnnotationItems = new List<List<string>>();
-            for (int i = 0; i < annos.FirstOrDefault().Count; i++)
-            {
-                var annoWords = new List<string>();
-                foreach (var anno in annos)
+                for (int i = 0; i < annos.FirstOrDefault().Count; i++)
                 {
-                    if (anno[i] != null)
-                        annoWords.AddRange(anno[i].Where(aw => aw != null));
+                    var annoWords = new List<string>();
+                    foreach (var anno in annos)
+                    {
+                        if (anno[i] != null)
+                            annoWords.AddRange(anno[i].Where(aw => aw != null));
+                    }
+                    normalWordsForAnnotationItems.Add(annoWords.Distinct().ToList());
                 }
-                normalWordsForAnnotationItems.Add(annoWords.Distinct().ToList());
             }
+            
             return normalWordsForAnnotationItems;
         }
     }
