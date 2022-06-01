@@ -1,9 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SemanticSimilarityCalculation.Services;
 using SemanticSimilarityCalculation.Services.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SemanticSimilarityCalculation.Tests.Services
 {
