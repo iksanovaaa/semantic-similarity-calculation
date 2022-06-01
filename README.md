@@ -18,19 +18,19 @@
 > Метод **GetSimilarity** возвращает значение по следующему запросу 
 
 ```
-curl --location --request POST 'https://localhost:<port>/api/semanticsimilarity/getsimilarity'
+curl --location --request GET 'https://localhost:<port>/api/semanticsimilarity/getsimilarity'
 ```
 
 > Метод **GetSimilarityWithNames** возвращает значение по следующему запросу 
 
 ```
-curl --location --request POST 'https://localhost:<port>/api/semanticsimilarity/getsimilaritywithnames'
+curl --location --request GET 'https://localhost:<port>/api/semanticsimilarity/getsimilaritywithnames'
 ```
 
 > Метод **GetRelevant** возвращает значение по следующему запросу 
 
 ```
-curl --location --request POST 'https://localhost:<port>/api/semanticsimilarity/getrelevant?documentId=<documentId>'
+curl --location --request GET 'https://localhost:<port>/api/semanticsimilarity/getrelevant?documentId=<documentId>'
 ```
 
 > Спецификация Swagger доступна по адресу:
